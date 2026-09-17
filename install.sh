@@ -24,7 +24,7 @@ sudo pacman -S --needed --noconfirm \
 
 echo "==> Linking ~/.config"
 mkdir -p ~/.config ~/.config/systemd/user ~/Pictures
-for c in i3 alacritty picom rofi i3status dunst fastfetch; do
+for c in i3 alacritty picom rofi i3status dunst; do
     backup ~/.config/$c
     ln -sfn "$REPO/config/$c" ~/.config/$c
 done

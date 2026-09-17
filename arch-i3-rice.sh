@@ -849,41 +849,6 @@ cat > $HOME/.config/dunst/dunstrc <<'__DOTFILE_EOF__'
 __DOTFILE_EOF__
 chmod 644 $HOME/.config/dunst/dunstrc
 palette $HOME/.config/dunst/dunstrc
-echo "  $HOME/.config/fastfetch/config.jsonc"
-mkdir -p "$(dirname $HOME/.config/fastfetch/config.jsonc)"
-backup $HOME/.config/fastfetch/config.jsonc
-cat > $HOME/.config/fastfetch/config.jsonc <<'__DOTFILE_EOF__'
-// fastfetch — shown on every new terminal (see ~/.bashrc)
-{
-    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
-    "logo": {
-        "type": "small",
-        "padding": { "top": 1, "right": 3 }
-    },
-    "display": {
-        "separator": "  ",
-        "color": { "keys": "blue", "title": "blue" }
-    },
-    "modules": [
-        "title",
-        { "type": "separator", "string": "─" },
-        { "type": "os",      "key": "os " },
-        { "type": "kernel",  "key": "krn" },
-        { "type": "wm",      "key": "wm " },
-        { "type": "shell",   "key": "sh " },
-        { "type": "terminal","key": "trm" },
-        { "type": "packages","key": "pkg" },
-        { "type": "uptime",  "key": "up " },
-        { "type": "memory",  "key": "mem" },
-        { "type": "disk",    "key": "dsk", "folders": "/" },
-        { "type": "battery", "key": "bat" },
-        "break",
-        { "type": "colors", "symbol": "circle", "paddingLeft": 2 }
-    ]
-}
-__DOTFILE_EOF__
-chmod 644 $HOME/.config/fastfetch/config.jsonc
-palette $HOME/.config/fastfetch/config.jsonc
 echo "  $HOME/.config/systemd/user/i3-focus-history.service"
 mkdir -p "$(dirname $HOME/.config/systemd/user/i3-focus-history.service)"
 backup $HOME/.config/systemd/user/i3-focus-history.service

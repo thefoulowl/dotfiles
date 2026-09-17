@@ -26,7 +26,6 @@ USER_FILES=(
     config/rofi/config.rasi
     config/i3status/config
     config/dunst/dunstrc
-    config/fastfetch/config.jsonc
     config/systemd/user/i3-focus-history.service
     config/systemd/user/battery-warn.service
     config/systemd/user/battery-warn.timer
