@@ -1,0 +1,7 @@
+[Unit]
+Description=Low battery notification check
+
+[Service]
+Type=oneshot
+Environment=DISPLAY=:0
+ExecStart=%h/.config/i3/scripts/battery_warn.sh

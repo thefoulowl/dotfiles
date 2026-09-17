@@ -1,0 +1,5 @@
+# PAM configuration file for i3lock. Auth directly against pam_unix, 
+# skipping pam_faillock so mistyped unlock attempts never lock the account.
+# 
+auth       required                    pam_unix.so          try_first_pass nullok
+account    required                    pam_unix.so
