@@ -91,7 +91,8 @@ sudo pacman -S --needed --noconfirm \
     i3-wm i3status dmenu alacritty xorg-server xorg-xinit \
     picom ttf-jetbrains-mono-nerd \
     i3lock xss-lock maim brightnessctl rofi dunst libnotify xcape \
-    ly python
+    feh python python-pillow \
+    ly
 mkdir -p ~/Pictures
 
 echo "==> Writing user configs"
@@ -102,7 +103,11 @@ for f in "${USER_FILES[@]}"; do
     emit_file "$f" "$dest" "$mode"
 done
 emit_file inputrc '$HOME/.inputrc' 644
+emit_file wallpaper/generate.py '$HOME/.config/wallpaper/generate.py' 755
 cat <<'BODY'
+
+echo "==> Generating wallpaper"
+(cd "$HOME/.config/wallpaper" && python3 generate.py)
 
 echo "==> Installing system files (sudo)"
 STAGE="$(mktemp -d)"

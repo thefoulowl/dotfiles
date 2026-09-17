@@ -43,7 +43,9 @@ client.unfocused         $muted    $bg       $fg    $muted     $bg
 client.urgent            $urgent   $urgent   $bg    $urgent    $urgent
 
 exec --no-startup-id picom --config ~/.config/picom/picom.conf
-exec --no-startup-id xsetroot -solid $bg
+# wallpaper (generated from the palette by ~/.config/wallpaper/generate.py);
+# exec_always so it's re-applied on restart too, not just first login
+exec_always --no-startup-id feh --no-fehbg --bg-fill ~/.config/wallpaper/wall.png
 # focus-history daemon runs as a systemd --user service instead (more reliable
 # than i3's own exec autostart, which wasn't firing reliably on this machine
 # for `i3-msg restart` — see i3-focus-history.service)

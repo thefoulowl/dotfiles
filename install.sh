@@ -19,7 +19,8 @@ sudo pacman -S --needed --noconfirm \
     i3-wm i3status dmenu alacritty xorg-server xorg-xinit \
     picom ttf-jetbrains-mono-nerd \
     i3lock xss-lock maim brightnessctl rofi dunst libnotify xcape \
-    ly python
+    feh python python-pillow \
+    ly
 
 echo "==> Linking ~/.config"
 mkdir -p ~/.config ~/.config/systemd/user ~/Pictures
@@ -33,6 +34,11 @@ for u in "$REPO"/config/systemd/user/*; do
 done
 backup ~/.inputrc
 ln -sfn "$REPO/inputrc" ~/.inputrc
+backup ~/.config/wallpaper
+ln -sfn "$REPO/wallpaper" ~/.config/wallpaper
+
+echo "==> Generating wallpaper"
+(cd "$REPO/wallpaper" && python3 generate.py)
 
 echo "==> Installing system files (sudo)"
 sudo install -Dm644 "$REPO/etc/pam.d/i3lock" /etc/pam.d/i3lock
