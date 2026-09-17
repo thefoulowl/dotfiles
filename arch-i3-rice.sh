@@ -397,6 +397,8 @@ def seed_stack_from_tree():
 
 
 def run_daemon():
+    import select
+
     seed_stack_from_tree()
     proc = subprocess.Popen(
         ["i3-msg", "-t", "subscribe", "-m", '["window"]'],
@@ -404,7 +406,18 @@ def run_daemon():
         text=True,
         bufsize=1,
     )
-    for line in proc.stdout:
+    while True:
+        # wake at least once a second even with no events, so a stuck cycle
+        # (e.g. the Alt-release bind occasionally missing its event when a
+        # window switch happens mid-hold) gets cleared within ~1s instead of
+        # waiting for the next incidental focus change to trigger the check
+        ready, _, _ = select.select([proc.stdout], [], [], 1.0)
+        if not ready:
+            cycle_in_progress()  # no-op unless stale; self-heals as a side effect
+            continue
+        line = proc.stdout.readline()
+        if not line:
+            break
         try:
             event = json.loads(line)
         except json.JSONDecodeError:
