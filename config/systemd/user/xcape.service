@@ -1,0 +1,14 @@
+[Unit]
+Description=Tap Super alone to open the app launcher
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/xcape -d -e "Super_L=Menu;Super_R=Menu"
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target

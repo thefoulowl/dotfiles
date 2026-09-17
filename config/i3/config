@@ -96,6 +96,12 @@ bindsym $mod+Shift+q kill
 
 # start dmenu (a program launcher)
 bindsym $mod+d exec --no-startup-id dmenu_run -nb "$bg" -nf "$fg" -sb "$accent" -sf "$bg" -fn "JetBrainsMono Nerd Font:size=10"
+
+# tap Super alone (no other key) to also open the launcher, Windows-key
+# style — xcape (systemd service) turns a solo Super tap into the Menu
+# keysym (an unused laptop key), since $mod+anything still needs to work
+# normally as every other shortcut
+bindsym Menu exec --no-startup-id dmenu_run -nb "$bg" -nf "$fg" -sb "$accent" -sf "$bg" -fn "JetBrainsMono Nerd Font:size=10"
 # A more modern dmenu replacement is rofi:
 # bindcode $mod+40 exec "rofi -modi drun,run -show drun"
 # There also is i3-dmenu-desktop which only displays applications shipping a
