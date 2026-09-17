@@ -938,6 +938,21 @@ WantedBy=default.target
 __DOTFILE_EOF__
 chmod 644 $HOME/.config/systemd/user/xcape.service
 palette $HOME/.config/systemd/user/xcape.service
+echo "  $HOME/.inputrc"
+mkdir -p "$(dirname $HOME/.inputrc)"
+backup $HOME/.inputrc
+cat > $HOME/.inputrc <<'__DOTFILE_EOF__'
+$include /etc/inputrc
+
+# case-insensitive tab completion (cd doc<TAB> matches Documents)
+set completion-ignore-case on
+# treat - and _ as equivalent while completing
+set completion-map-case on
+# show all matches immediately on ambiguous completion instead of a second Tab
+set show-all-if-ambiguous on
+__DOTFILE_EOF__
+chmod 644 $HOME/.inputrc
+palette $HOME/.inputrc
 
 echo "==> Installing system files (sudo)"
 STAGE="$(mktemp -d)"

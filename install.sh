@@ -31,6 +31,8 @@ for u in "$REPO"/config/systemd/user/*; do
     backup ~/.config/systemd/user/"$(basename "$u")"
     ln -sfn "$u" ~/.config/systemd/user/"$(basename "$u")"
 done
+backup ~/.inputrc
+ln -sfn "$REPO/inputrc" ~/.inputrc
 
 echo "==> Installing system files (sudo)"
 sudo install -Dm644 "$REPO/etc/pam.d/i3lock" /etc/pam.d/i3lock

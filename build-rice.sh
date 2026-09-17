@@ -101,6 +101,7 @@ for f in "${USER_FILES[@]}"; do
     mode=644; [[ $f == *.sh || $f == *.py ]] && mode=755
     emit_file "$f" "$dest" "$mode"
 done
+emit_file inputrc '$HOME/.inputrc' 644
 cat <<'BODY'
 
 echo "==> Installing system files (sudo)"
