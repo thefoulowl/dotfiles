@@ -29,6 +29,8 @@ USER_FILES=(
     config/systemd/user/i3-focus-history.service
     config/systemd/user/battery-warn.service
     config/systemd/user/battery-warn.timer
+    config/systemd/user/xss-lock.service
+    config/systemd/user/xcape.service
 )
 # system files: repo path -> absolute install path
 SYSTEM_FILES=(
@@ -88,7 +90,7 @@ echo "==> Installing packages (sudo)"
 sudo pacman -S --needed --noconfirm \
     i3-wm i3status dmenu alacritty xorg-server xorg-xinit \
     picom ttf-jetbrains-mono-nerd \
-    i3lock xss-lock maim brightnessctl rofi dunst libnotify \
+    i3lock xss-lock maim brightnessctl rofi dunst libnotify xcape \
     ly python
 mkdir -p ~/Pictures
 
@@ -116,12 +118,13 @@ sudo sed -i "s|^battery_id = .*|battery_id = ${BAT:-null}|" /etc/ly/config.ini
 
 echo "==> Enabling services"
 systemctl --user daemon-reload
-systemctl --user enable --now i3-focus-history.service battery-warn.timer
+systemctl --user enable --now i3-focus-history.service battery-warn.timer xss-lock.service xcape.service
 sudo systemctl enable ly@tty1.service
 
 echo
-echo "Done. Reboot for the ly login screen + touchpad tap-to-click. \$mod = Super."
-echo "Alt+Tab cycles windows (hold Alt, tap Tab, release to land), \$mod+minus"
+echo "Done. Reboot for the ly login screen + touchpad tap-to-click. \$mod = Super,"
+echo "or tap it alone for the launcher too. Alt+Tab cycles windows (hold Alt,"
+echo "tap Tab, release to land), \$mod+minus"
 echo "minimizes, \$mod+Shift+underscore restores, \$mod+m minimizes everything,"
 echo "\$mod+Shift+Tab is the rofi window picker, \$mod+f toggles fullscreen."
 echo "If ~/.bash_profile has an old 'exec startx', remove it — ly owns X now."

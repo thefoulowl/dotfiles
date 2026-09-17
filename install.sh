@@ -18,7 +18,7 @@ echo "==> Installing packages"
 sudo pacman -S --needed --noconfirm \
     i3-wm i3status dmenu alacritty xorg-server xorg-xinit \
     picom ttf-jetbrains-mono-nerd \
-    i3lock xss-lock maim brightnessctl rofi dunst libnotify \
+    i3lock xss-lock maim brightnessctl rofi dunst libnotify xcape \
     ly python
 
 echo "==> Linking ~/.config"
@@ -42,10 +42,11 @@ sudo sed -i "s|^battery_id = .*|battery_id = ${BAT:-null}|" /etc/ly/config.ini
 
 echo "==> Enabling services"
 systemctl --user daemon-reload
-systemctl --user enable --now i3-focus-history.service battery-warn.timer
+systemctl --user enable --now i3-focus-history.service battery-warn.timer xcape.service xss-lock.service
 sudo systemctl enable ly@tty1.service
 
 echo
-echo "Done. Reboot for ly + touchpad tap-to-click. \$mod = Super."
-echo "Alt+Tab cycles windows, \$mod+minus minimizes, \$mod+Shift+underscore restores,"
-echo "\$mod+m minimizes all, \$mod+Shift+Tab is the rofi window picker."
+echo "Done. Reboot for ly + touchpad tap-to-click. \$mod = Super, or tap it"
+echo "alone for the launcher too. Alt+Tab cycles windows, \$mod+minus minimizes,"
+echo "\$mod+Shift+underscore restores, \$mod+m minimizes all, \$mod+Shift+Tab"
+echo "is the rofi window picker."

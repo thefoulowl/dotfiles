@@ -35,7 +35,7 @@ echo "==> Installing packages (sudo)"
 sudo pacman -S --needed --noconfirm \
     i3-wm i3status dmenu alacritty xorg-server xorg-xinit \
     picom ttf-jetbrains-mono-nerd \
-    i3lock xss-lock maim brightnessctl rofi dunst libnotify \
+    i3lock xss-lock maim brightnessctl rofi dunst libnotify xcape \
     ly python
 mkdir -p ~/Pictures
 
@@ -883,6 +883,48 @@ WantedBy=timers.target
 __DOTFILE_EOF__
 chmod 644 $HOME/.config/systemd/user/battery-warn.timer
 palette $HOME/.config/systemd/user/battery-warn.timer
+echo "  $HOME/.config/systemd/user/xss-lock.service"
+mkdir -p "$(dirname $HOME/.config/systemd/user/xss-lock.service)"
+backup $HOME/.config/systemd/user/xss-lock.service
+cat > $HOME/.config/systemd/user/xss-lock.service <<'__DOTFILE_EOF__'
+[Unit]
+Description=Lock screen before suspend (via i3lock)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/xss-lock --transfer-sleep-lock -- /usr/bin/i3lock --nofork -c 101014
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target
+__DOTFILE_EOF__
+chmod 644 $HOME/.config/systemd/user/xss-lock.service
+palette $HOME/.config/systemd/user/xss-lock.service
+echo "  $HOME/.config/systemd/user/xcape.service"
+mkdir -p "$(dirname $HOME/.config/systemd/user/xcape.service)"
+backup $HOME/.config/systemd/user/xcape.service
+cat > $HOME/.config/systemd/user/xcape.service <<'__DOTFILE_EOF__'
+[Unit]
+Description=Tap Super alone to open the app launcher
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/xcape -d -e "Super_L=Menu;Super_R=Menu"
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target
+__DOTFILE_EOF__
+chmod 644 $HOME/.config/systemd/user/xcape.service
+palette $HOME/.config/systemd/user/xcape.service
 
 echo "==> Installing system files (sudo)"
 STAGE="$(mktemp -d)"
@@ -1352,12 +1394,13 @@ sudo sed -i "s|^battery_id = .*|battery_id = ${BAT:-null}|" /etc/ly/config.ini
 
 echo "==> Enabling services"
 systemctl --user daemon-reload
-systemctl --user enable --now i3-focus-history.service battery-warn.timer
+systemctl --user enable --now i3-focus-history.service battery-warn.timer xss-lock.service xcape.service
 sudo systemctl enable ly@tty1.service
 
 echo
-echo "Done. Reboot for the ly login screen + touchpad tap-to-click. \$mod = Super."
-echo "Alt+Tab cycles windows (hold Alt, tap Tab, release to land), \$mod+minus"
+echo "Done. Reboot for the ly login screen + touchpad tap-to-click. \$mod = Super,"
+echo "or tap it alone for the launcher too. Alt+Tab cycles windows (hold Alt,"
+echo "tap Tab, release to land), \$mod+minus"
 echo "minimizes, \$mod+Shift+underscore restores, \$mod+m minimizes everything,"
 echo "\$mod+Shift+Tab is the rofi window picker, \$mod+f toggles fullscreen."
 echo "If ~/.bash_profile has an old 'exec startx', remove it — ly owns X now."

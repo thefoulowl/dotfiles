@@ -1,0 +1,14 @@
+[Unit]
+Description=Lock screen before suspend (via i3lock)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/xss-lock --transfer-sleep-lock -- /usr/bin/i3lock --nofork -c 101014
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target
