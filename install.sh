@@ -19,12 +19,12 @@ sudo pacman -S --needed --noconfirm \
     i3-wm i3status dmenu alacritty xorg-server xorg-xinit \
     picom ttf-jetbrains-mono-nerd \
     i3lock xss-lock maim brightnessctl rofi dunst libnotify xcape \
-    feh python python-pillow \
+    feh python python-pillow fastfetch \
     ly
 
 echo "==> Linking ~/.config"
 mkdir -p ~/.config ~/.config/systemd/user ~/Pictures
-for c in i3 alacritty picom rofi i3status dunst; do
+for c in i3 alacritty picom rofi i3status dunst fastfetch; do
     backup ~/.config/$c
     ln -sfn "$REPO/config/$c" ~/.config/$c
 done
@@ -34,6 +34,8 @@ for u in "$REPO"/config/systemd/user/*; do
 done
 backup ~/.inputrc
 ln -sfn "$REPO/inputrc" ~/.inputrc
+backup ~/.bashrc
+ln -sfn "$REPO/bashrc" ~/.bashrc
 backup ~/.config/wallpaper
 ln -sfn "$REPO/wallpaper" ~/.config/wallpaper
 

@@ -36,7 +36,7 @@ sudo pacman -S --needed --noconfirm \
     i3-wm i3status dmenu alacritty xorg-server xorg-xinit \
     picom ttf-jetbrains-mono-nerd \
     i3lock xss-lock maim brightnessctl rofi dunst libnotify xcape \
-    feh python python-pillow \
+    feh python python-pillow fastfetch \
     ly
 mkdir -p ~/Pictures
 
@@ -849,6 +849,41 @@ cat > $HOME/.config/dunst/dunstrc <<'__DOTFILE_EOF__'
 __DOTFILE_EOF__
 chmod 644 $HOME/.config/dunst/dunstrc
 palette $HOME/.config/dunst/dunstrc
+echo "  $HOME/.config/fastfetch/config.jsonc"
+mkdir -p "$(dirname $HOME/.config/fastfetch/config.jsonc)"
+backup $HOME/.config/fastfetch/config.jsonc
+cat > $HOME/.config/fastfetch/config.jsonc <<'__DOTFILE_EOF__'
+// fastfetch — shown on every new terminal (see ~/.bashrc)
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "type": "small",
+        "padding": { "top": 1, "right": 3 }
+    },
+    "display": {
+        "separator": "  ",
+        "color": { "keys": "blue", "title": "blue" }
+    },
+    "modules": [
+        "title",
+        { "type": "separator", "string": "─" },
+        { "type": "os",      "key": "os " },
+        { "type": "kernel",  "key": "krn" },
+        { "type": "wm",      "key": "wm " },
+        { "type": "shell",   "key": "sh " },
+        { "type": "terminal","key": "trm" },
+        { "type": "packages","key": "pkg" },
+        { "type": "uptime",  "key": "up " },
+        { "type": "memory",  "key": "mem" },
+        { "type": "disk",    "key": "dsk", "folders": "/" },
+        { "type": "battery", "key": "bat" },
+        "break",
+        { "type": "colors", "symbol": "circle", "paddingLeft": 2 }
+    ]
+}
+__DOTFILE_EOF__
+chmod 644 $HOME/.config/fastfetch/config.jsonc
+palette $HOME/.config/fastfetch/config.jsonc
 echo "  $HOME/.config/systemd/user/i3-focus-history.service"
 mkdir -p "$(dirname $HOME/.config/systemd/user/i3-focus-history.service)"
 backup $HOME/.config/systemd/user/i3-focus-history.service
@@ -956,6 +991,27 @@ set show-all-if-ambiguous on
 __DOTFILE_EOF__
 chmod 644 $HOME/.inputrc
 palette $HOME/.inputrc
+echo "  $HOME/.bashrc"
+mkdir -p "$(dirname $HOME/.bashrc)"
+backup $HOME/.bashrc
+cat > $HOME/.bashrc <<'__DOTFILE_EOF__'
+#
+# ~/.bashrc
+#
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+PS1='[\u@\h \W]\$ '
+export PATH="$HOME/.local/bin:$PATH"
+
+# system summary on every new terminal
+command -v fastfetch >/dev/null && fastfetch
+__DOTFILE_EOF__
+chmod 644 $HOME/.bashrc
+palette $HOME/.bashrc
 echo "  $HOME/.config/wallpaper/generate.py"
 mkdir -p "$(dirname $HOME/.config/wallpaper/generate.py)"
 backup $HOME/.config/wallpaper/generate.py

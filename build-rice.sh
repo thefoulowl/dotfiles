@@ -26,6 +26,7 @@ USER_FILES=(
     config/rofi/config.rasi
     config/i3status/config
     config/dunst/dunstrc
+    config/fastfetch/config.jsonc
     config/systemd/user/i3-focus-history.service
     config/systemd/user/battery-warn.service
     config/systemd/user/battery-warn.timer
@@ -91,7 +92,7 @@ sudo pacman -S --needed --noconfirm \
     i3-wm i3status dmenu alacritty xorg-server xorg-xinit \
     picom ttf-jetbrains-mono-nerd \
     i3lock xss-lock maim brightnessctl rofi dunst libnotify xcape \
-    feh python python-pillow \
+    feh python python-pillow fastfetch \
     ly
 mkdir -p ~/Pictures
 
@@ -103,6 +104,7 @@ for f in "${USER_FILES[@]}"; do
     emit_file "$f" "$dest" "$mode"
 done
 emit_file inputrc '$HOME/.inputrc' 644
+emit_file bashrc '$HOME/.bashrc' 644
 emit_file wallpaper/generate.py '$HOME/.config/wallpaper/generate.py' 755
 cat <<'BODY'
 
