@@ -4,9 +4,14 @@
 #   goforit on     connect
 #   goforit off    disconnect
 #   goforit status show state
+#   goforit movie  connect + Movie EQ (dialogue clarity, tamed mud/harshness)
+#   goforit music  connect + Music EQ (fuller bass, sparkle)
+#   goforit flat   EQ off (raw AAC)
 MAC="18:5C:A1:18:97:FB"
 NAME="realme Buds Air7"
 SINK="bluez_output.${MAC//:/_}.1"
+EQDIR="$HOME/.config/pipewire/eq"
+RUN="${XDG_RUNTIME_DIR:-/tmp}/goforit"
 
 connected() { bluetoothctl info "$MAC" 2>/dev/null | grep -q "Connected: yes"; }
 notify() { command -v dunstify >/dev/null && dunstify -a osd -u low -r 9993 "$1" "$2"; echo "$1 $2"; }
@@ -29,14 +34,39 @@ do_on() {
 }
 
 do_off() {
+  eq_off quiet
   bluetoothctl disconnect "$MAC" >/dev/null 2>&1
   notify " $NAME" "disconnected"
+}
+
+# --- EQ: a PipeWire filter-chain process creating a virtual sink that feeds the buds ---
+eq_off() {
+  [[ -f "$RUN/eq.pid" ]] && kill "$(cat "$RUN/eq.pid")" 2>/dev/null
+  rm -f "$RUN/eq.pid" "$RUN/eq.profile"
+  pactl set-default-sink "$SINK" 2>/dev/null
+  [[ $1 == quiet ]] || notify "󰓃 EQ" "off (flat)"
+}
+
+eq_on() {
+  local prof=$1; local conf="$EQDIR/$prof.conf"
+  [[ -f "$conf" ]] || { echo "no EQ profile '$prof' (have: $(ls "$EQDIR" | sed 's/.conf//' | tr '\n' ' '))"; exit 1; }
+  connected || do_on || exit 1
+  eq_off quiet
+  mkdir -p "$RUN"
+  sed "s|@TARGET@|$SINK|" "$conf" > "$RUN/eq.conf"
+  pipewire -c "$RUN/eq.conf" >/dev/null 2>&1 &
+  echo $! > "$RUN/eq.pid"; echo "$prof" > "$RUN/eq.profile"
+  for i in $(seq 1 20); do pactl list sinks short 2>/dev/null | grep -q "eq_$prof" && break; sleep 0.25; done
+  pactl set-default-sink "eq_$prof" 2>/dev/null && notify "󰓃 EQ" "${prof^} profile on" || notify "󰓃 EQ" "failed to start"
 }
 
 case "${1:-toggle}" in
   on)     do_on ;;
   off)    do_off ;;
-  status) connected && echo "$NAME: connected" || echo "$NAME: disconnected" ;;
+  status) connected && echo "$NAME: connected" || echo "$NAME: disconnected"
+          [[ -f "$RUN/eq.profile" ]] && echo "EQ: $(cat "$RUN/eq.profile")" || echo "EQ: flat" ;;
+  movie|music) eq_on "$1" ;;
+  flat)   eq_off ;;
   toggle) connected && do_off || do_on ;;
-  *)      sed -n '2,6p' "$0"; exit 1 ;;
+  *)      sed -n '2,9p' "$0"; exit 1 ;;
 esac
