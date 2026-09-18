@@ -38,7 +38,7 @@ backup ~/.bashrc
 ln -sfn "$REPO/bashrc" ~/.bashrc
 backup ~/.config/wallpaper
 ln -sfn "$REPO/wallpaper" ~/.config/wallpaper
-mkdir -p ~/.local/bin && ln -sfn "$REPO/bin/osd" ~/.local/bin/osd
+mkdir -p ~/.local/bin && for b in "$REPO"/bin/*; do ln -sfn "$b" ~/.local/bin/"$(basename "$b")"; done
 
 echo "==> Generating wallpaper"
 (cd "$REPO/wallpaper" && python3 generate.py)

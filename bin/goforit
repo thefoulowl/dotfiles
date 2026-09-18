@@ -1,0 +1,42 @@
+#!/bin/bash
+# goforit — toggle connection to the realme Buds Air 7.
+#   goforit        toggle (connect if disconnected, disconnect if connected)
+#   goforit on     connect
+#   goforit off    disconnect
+#   goforit status show state
+MAC="18:5C:A1:18:97:FB"
+NAME="realme Buds Air7"
+SINK="bluez_output.${MAC//:/_}.1"
+
+connected() { bluetoothctl info "$MAC" 2>/dev/null | grep -q "Connected: yes"; }
+notify() { command -v dunstify >/dev/null && dunstify -a osd -u low -r 9993 "$1" "$2"; echo "$1 $2"; }
+
+do_on() {
+  bluetoothctl power on >/dev/null
+  echo "Connecting to $NAME (open the case if it doesn't respond)..."
+  for i in 1 2 3; do
+    bluetoothctl connect "$MAC" >/dev/null 2>&1 && break
+    sleep 2
+  done
+  if connected; then
+    for i in $(seq 1 10); do pactl list sinks short 2>/dev/null | grep -q "$SINK" && break; sleep 0.5; done
+    pactl set-default-sink "$SINK" 2>/dev/null
+    codec=$(pactl list sinks 2>/dev/null | grep -A60 "$SINK" | grep -oP 'api.bluez5.codec = "\K[^"]+')
+    notify " $NAME" "connected${codec:+ · ${codec^^}}"
+  else
+    notify " $NAME" "not found — is it in range / out of the case?"; exit 1
+  fi
+}
+
+do_off() {
+  bluetoothctl disconnect "$MAC" >/dev/null 2>&1
+  notify " $NAME" "disconnected"
+}
+
+case "${1:-toggle}" in
+  on)     do_on ;;
+  off)    do_off ;;
+  status) connected && echo "$NAME: connected" || echo "$NAME: disconnected" ;;
+  toggle) connected && do_off || do_on ;;
+  *)      sed -n '2,6p' "$0"; exit 1 ;;
+esac
