@@ -1,14 +1,23 @@
 #!/bin/bash
-# goforit — toggle connection to the realme Buds Air 7.
-#   goforit        toggle (connect if disconnected, disconnect if connected)
-#   goforit on     connect
-#   goforit off    disconnect
-#   goforit status show state
-#   goforit movie  connect + Movie EQ (dialogue clarity, tamed mud/harshness)
-#   goforit music  connect + Music EQ (fuller bass, sparkle)
-#   goforit flat   EQ off (raw AAC)
-MAC="18:5C:A1:18:97:FB"
-NAME="realme Buds Air7"
+# goforit — connect/disconnect Bluetooth audio devices, with EQ profiles.
+#   goforit [dev]          toggle (connect if disconnected, disconnect if connected)
+#   goforit [dev] on|off   connect / disconnect
+#   goforit [dev] status   show state
+#   goforit [dev] movie    connect + Movie EQ (dialogue clarity, tamed mud/harshness)
+#   goforit [dev] music    connect + Music EQ (fuller bass, sparkle)
+#   goforit [dev] flat     EQ off
+# dev: buds (default, realme Buds Air 7) | zeb (Zebronics Zeb County 8)
+# Connecting one device disconnects the other.
+declare -A DEV_MAC=( [buds]="18:5C:A1:18:97:FB" [zeb]="2D:7F:76:4A:8C:32" )
+declare -A DEV_NAME=( [buds]="realme Buds Air7" [zeb]="Zeb County 8" )
+declare -A DEV_PROFILE=( [zeb]="a2dp-sink-sbc_xq" )   # best codec the speaker offers
+declare -A DEV_ICON=( [buds]="" [zeb]="󰓃" )
+
+DEV=buds
+case "$1" in buds|zeb) DEV=$1; shift ;; esac
+MAC=${DEV_MAC[$DEV]}
+NAME=${DEV_NAME[$DEV]}
+ICON=${DEV_ICON[$DEV]}
 SINK="bluez_output.${MAC//:/_}.1"
 EQDIR="$HOME/.config/pipewire/eq"
 RUN="${XDG_RUNTIME_DIR:-/tmp}/goforit"
@@ -18,25 +27,31 @@ notify() { command -v dunstify >/dev/null && dunstify -a osd -u low -r 9993 "$1"
 
 do_on() {
   bluetoothctl power on >/dev/null
-  echo "Connecting to $NAME (open the case if it doesn't respond)..."
+  eq_off quiet
+  for d in "${!DEV_MAC[@]}"; do   # one output at a time
+    [[ $d != "$DEV" ]] && bluetoothctl info "${DEV_MAC[$d]}" 2>/dev/null | grep -q "Connected: yes" \
+      && bluetoothctl disconnect "${DEV_MAC[$d]}" >/dev/null 2>&1
+  done
+  echo "Connecting to $NAME..."
   for i in 1 2 3; do
-    bluetoothctl connect "$MAC" >/dev/null 2>&1 && break
+    timeout 12 bluetoothctl connect "$MAC" >/dev/null 2>&1 && break
     sleep 2
   done
   if connected; then
     for i in $(seq 1 10); do pactl list sinks short 2>/dev/null | grep -q "$SINK" && break; sleep 0.5; done
+    [[ -n ${DEV_PROFILE[$DEV]} ]] && pactl set-card-profile "bluez_card.${MAC//:/_}" "${DEV_PROFILE[$DEV]}" 2>/dev/null
     pactl set-default-sink "$SINK" 2>/dev/null
     codec=$(pactl list sinks 2>/dev/null | grep -A60 "$SINK" | grep -oP 'api.bluez5.codec = "\K[^"]+')
-    notify " $NAME" "connected${codec:+ · ${codec^^}}"
+    notify "$ICON $NAME" "connected${codec:+ · ${codec^^}}"
   else
-    notify " $NAME" "not found — is it in range / out of the case?"; exit 1
+    notify "$ICON $NAME" "not found — is it on and in range?"; exit 1
   fi
 }
 
 do_off() {
   eq_off quiet
   bluetoothctl disconnect "$MAC" >/dev/null 2>&1
-  notify " $NAME" "disconnected"
+  notify "$ICON $NAME" "disconnected"
 }
 
 # --- EQ: a PipeWire filter-chain process creating a virtual sink that feeds the buds ---
@@ -54,7 +69,9 @@ eq_off() {
 }
 
 eq_on() {
-  local prof=$1; local conf="$EQDIR/$prof.conf"
+  local prof=$1
+  [[ -f "$EQDIR/$DEV-$prof.conf" ]] && prof="$DEV-$prof"   # device-specific curve if present
+  local conf="$EQDIR/$prof.conf"
   [[ -f "$conf" ]] || { echo "no EQ profile '$prof' (have: $(ls "$EQDIR" | sed 's/.conf//' | tr '\n' ' '))"; exit 1; }
   connected || do_on || exit 1
   local v; v=$(vol_of "$SINK")
@@ -67,7 +84,7 @@ eq_on() {
   # volume lives on the EQ sink; the buds sink stays at 100% so the two don't stack
   pactl set-sink-volume "eq_$prof" "${v:-70}%" 2>/dev/null
   pactl set-sink-volume "$SINK" 100% 2>/dev/null
-  pactl set-default-sink "eq_$prof" 2>/dev/null && notify "󰓃 EQ" "${prof^} profile on" || notify "󰓃 EQ" "failed to start"
+  pactl set-default-sink "eq_$prof" 2>/dev/null && notify "󰓃 EQ" "${prof^} on" || notify "󰓃 EQ" "failed to start"
 }
 
 case "${1:-toggle}" in
@@ -78,5 +95,5 @@ case "${1:-toggle}" in
   movie|music) eq_on "$1" ;;
   flat)   eq_off ;;
   toggle) connected && do_off || do_on ;;
-  *)      sed -n '2,9p' "$0"; exit 1 ;;
+  *)      sed -n '2,10p' "$0"; exit 1 ;;
 esac
