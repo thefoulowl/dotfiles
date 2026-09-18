@@ -40,7 +40,13 @@ do_off() {
 }
 
 # --- EQ: a PipeWire filter-chain process creating a virtual sink that feeds the buds ---
+vol_of() { pactl get-sink-volume "$1" 2>/dev/null | grep -oP '\d+(?=%)' | head -1; }
+
 eq_off() {
+  if [[ -f "$RUN/eq.profile" ]]; then
+    # hand the user's level back to the buds sink so the volume keys keep meaning the same thing
+    local v; v=$(vol_of "eq_$(cat "$RUN/eq.profile")"); [[ -n $v ]] && pactl set-sink-volume "$SINK" "${v}%"
+  fi
   [[ -f "$RUN/eq.pid" ]] && kill "$(cat "$RUN/eq.pid")" 2>/dev/null
   rm -f "$RUN/eq.pid" "$RUN/eq.profile"
   pactl set-default-sink "$SINK" 2>/dev/null
@@ -51,12 +57,16 @@ eq_on() {
   local prof=$1; local conf="$EQDIR/$prof.conf"
   [[ -f "$conf" ]] || { echo "no EQ profile '$prof' (have: $(ls "$EQDIR" | sed 's/.conf//' | tr '\n' ' '))"; exit 1; }
   connected || do_on || exit 1
+  local v; v=$(vol_of "$SINK")
   eq_off quiet
   mkdir -p "$RUN"
   sed "s|@TARGET@|$SINK|" "$conf" > "$RUN/eq.conf"
   pipewire -c "$RUN/eq.conf" >/dev/null 2>&1 &
   echo $! > "$RUN/eq.pid"; echo "$prof" > "$RUN/eq.profile"
   for i in $(seq 1 20); do pactl list sinks short 2>/dev/null | grep -q "eq_$prof" && break; sleep 0.25; done
+  # volume lives on the EQ sink; the buds sink stays at 100% so the two don't stack
+  pactl set-sink-volume "eq_$prof" "${v:-70}%" 2>/dev/null
+  pactl set-sink-volume "$SINK" 100% 2>/dev/null
   pactl set-default-sink "eq_$prof" 2>/dev/null && notify "󰓃 EQ" "${prof^} profile on" || notify "󰓃 EQ" "failed to start"
 }
 
