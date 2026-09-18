@@ -11,7 +11,7 @@
 # Connecting one device disconnects the other.
 declare -A DEV_MAC=( [buds]="18:5C:A1:18:97:FB" [zeb]="2D:7F:76:4A:8C:32" )
 declare -A DEV_NAME=( [buds]="realme Buds Air7" [zeb]="Zeb County 8" )
-declare -A DEV_PROFILE=( [zeb]="a2dp-sink-sbc_xq" )   # best codec the speaker offers
+declare -A DEV_PROFILE=( [zeb]="a2dp-sink" )   # plain SBC: SBC-XQ overruns this speaker's radio and skips
 declare -A DEV_ICON=( [buds]="" [zeb]="󰓃" )
 
 DEV=buds

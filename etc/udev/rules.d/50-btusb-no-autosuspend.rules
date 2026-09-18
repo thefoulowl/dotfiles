@@ -1,0 +1,3 @@
+# Keep the Bluetooth USB controller powered: autosuspend causes audio micro-dropouts
+ACTION=="add", SUBSYSTEM=="usb", DRIVER=="btusb", ATTR{power/control}="on"
+ACTION=="add", SUBSYSTEM=="usb", ATTR{bInterfaceClass}=="e0", ATTR{bInterfaceSubClass}=="01", ATTR{bInterfaceProtocol}=="01", ATTR{../power/control}="on"
