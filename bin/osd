@@ -1,0 +1,26 @@
+#!/bin/bash
+# On-screen display for volume/brightness via dunst progress bar.
+# usage: osd vol up|down|mute   |   osd bri up|down
+case "$1" in
+  vol)
+    case "$2" in
+      up)   wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ 2>/dev/null ;;
+      down) wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- 2>/dev/null ;;
+      mute) wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle 2>/dev/null ;;
+    esac
+    v=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)
+    pct=$(echo "$v" | awk '{printf "%d", $2*100}')
+    if [[ $v == *MUTED* ]]; then
+      dunstify -a osd -u low -r 9991 -h int:value:0 "󰝟 Muted"
+    else
+      dunstify -a osd -u low -r 9991 -h int:value:"$pct" "  Volume ${pct}%"
+    fi
+    pkill -RTMIN+10 i3status 2>/dev/null ;;
+  bri)
+    case "$2" in
+      up)   brightnessctl -q set +5% ;;
+      down) brightnessctl -q set 5%- ;;
+    esac
+    pct=$(brightnessctl -m | cut -d, -f4 | tr -d %)
+    dunstify -a osd -u low -r 9992 -h int:value:"$pct" "  Brightness ${pct}%" ;;
+esac

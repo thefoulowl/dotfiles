@@ -24,7 +24,7 @@ sudo pacman -S --needed --noconfirm \
 
 echo "==> Linking ~/.config"
 mkdir -p ~/.config ~/.config/systemd/user ~/Pictures
-for c in i3 alacritty picom rofi i3status dunst; do
+for c in i3 alacritty picom rofi i3status dunst wireplumber; do
     backup ~/.config/$c
     ln -sfn "$REPO/config/$c" ~/.config/$c
 done
@@ -38,6 +38,7 @@ backup ~/.bashrc
 ln -sfn "$REPO/bashrc" ~/.bashrc
 backup ~/.config/wallpaper
 ln -sfn "$REPO/wallpaper" ~/.config/wallpaper
+mkdir -p ~/.local/bin && ln -sfn "$REPO/bin/osd" ~/.local/bin/osd
 
 echo "==> Generating wallpaper"
 (cd "$REPO/wallpaper" && python3 generate.py)

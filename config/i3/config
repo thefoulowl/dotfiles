@@ -56,14 +56,14 @@ exec_always --no-startup-id feh --no-fehbg --bg-fill ~/.config/wallpaper/wall.pn
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
-bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
-bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
-bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
+bindsym XF86AudioRaiseVolume exec --no-startup-id ~/.local/bin/osd vol up
+bindsym XF86AudioLowerVolume exec --no-startup-id ~/.local/bin/osd vol down
+bindsym XF86AudioMute exec --no-startup-id ~/.local/bin/osd vol mute
 bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
 
 # Brightness
-bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set +10%
-bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 10%-
+bindsym XF86MonBrightnessUp exec --no-startup-id ~/.local/bin/osd bri up
+bindsym XF86MonBrightnessDown exec --no-startup-id ~/.local/bin/osd bri down
 
 # Screenshots (maim): full screen / region select
 bindsym $mod+p exec --no-startup-id maim ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png
