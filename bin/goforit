@@ -6,7 +6,7 @@
 #   goforit [dev] movie    connect + Movie EQ (dialogue clarity, tamed mud/harshness)
 #   goforit [dev] music    connect + Music EQ (fuller bass, sparkle)
 #   goforit [dev] flat     EQ off
-#   goforit [dev] boost    re-apply current EQ (or flat) with +12 dB gain for quiet sources
+#   goforit [dev] boost    re-apply current EQ (or flat) with +6 dB gain for quiet sources
 # dev: buds (default, realme Buds Air 7) | zeb (Zebronics Zeb County 8)
 # Connecting one device disconnects the other.
 declare -A DEV_MAC=( [buds]="18:5C:A1:18:97:FB" [zeb]="2D:7F:76:4A:8C:32" )
@@ -79,9 +79,9 @@ eq_on() {
   eq_off quiet
   mkdir -p "$RUN"
   sed "s|@TARGET@|$SINK|" "$conf" > "$RUN/eq.conf"
-  if [[ -n $BOOST ]]; then   # inject a +12 dB mixer stage at the head of the chain
+  if [[ -n $BOOST ]]; then   # inject a +6 dB mixer stage at the head of the chain
     local first; first=$(grep -oP 'name = \K\w+(?=\s+control)' "$conf" | head -1)
-    sed -i "/nodes = \[/a\          { type = builtin label = mixer name = boost control = { \"Gain 1\" = 4.0 } }" "$RUN/eq.conf"
+    sed -i "/nodes = \[/a\          { type = builtin label = mixer name = boost control = { \"Gain 1\" = 2.0 } }" "$RUN/eq.conf"
     sed -i "/links = \[/a\          { output = \"boost:Out\" input = \"$first:In\" }" "$RUN/eq.conf"
     local last; last=$(grep -oP 'name = \K\w+(?=\s+control)' "$conf" | tail -1)
     sed -i "/filter.graph = {/a\        inputs = [ \"boost:In 1\" ]\n        outputs = [ \"$last:Out\" ]" "$RUN/eq.conf"
@@ -95,14 +95,14 @@ eq_on() {
   # volume lives on the EQ sink; the buds sink stays at 100% so the two don't stack
   pactl set-sink-volume "eq_$prof" "${v:-70}%" 2>/dev/null
   pactl set-sink-volume "$SINK" 100% 2>/dev/null
-  pactl set-default-sink "eq_$prof" 2>/dev/null && notify "󰓃 EQ" "${prof^} on${BOOST:+ · +12 dB boost}" || notify "󰓃 EQ" "failed to start"
+  pactl set-default-sink "eq_$prof" 2>/dev/null && notify "󰓃 EQ" "${prof^} on${BOOST:+ · +6 dB boost}" || notify "󰓃 EQ" "failed to start"
 }
 
 case "${1:-toggle}" in
   on)     do_on ;;
   off)    do_off ;;
   status) connected && echo "$NAME: connected" || echo "$NAME: disconnected"
-          [[ -f "$RUN/eq.profile" ]] && echo "EQ: $(cat "$RUN/eq.profile")$( [[ -f $RUN/eq.boost ]] && echo ' +12 dB')" || echo "EQ: flat" ;;
+          [[ -f "$RUN/eq.profile" ]] && echo "EQ: $(cat "$RUN/eq.profile")$( [[ -f $RUN/eq.boost ]] && echo ' +6 dB')" || echo "EQ: flat" ;;
   movie|music) eq_on "$1" ;;
   boost)  cur=$(cat "$RUN/eq.profile" 2>/dev/null); cur=${cur#$DEV-}; BOOST=1 eq_on "${cur:-flat}" ;;
   flat)   eq_off ;;   # note: "flat" EQ profile file is only used as the boost base
